@@ -411,7 +411,7 @@ class Fieldset
 			return $fields;
 		}
 
-		if ( ! array_key_exists($name, $this->fields))
+		if ( ! array_key_exists($name, $this->fields) and $flatten)
 		{
 			if ($flatten)
 			{
