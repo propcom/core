@@ -259,6 +259,7 @@ class Asset_Instance
 								continue;
 							}
 
+							\Log::error(var_export($this, true), __METHOD__);
 							throw new \FuelException('Could not find asset: '.$filename);
 						}
 					}
