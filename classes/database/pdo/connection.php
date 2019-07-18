@@ -496,6 +496,54 @@ class Database_PDO_Connection extends \Database_Connection
 		$this->set_charset($this->_config['charset']);
 	}
 
+	protected function __tj__get_connection_id()
+	{
+		$result = $this->_connection->query("SELECT CONNECTION_ID() AS id", \PDO::FETCH_ASSOC);
+		
+		$id = null;
+		if ($result) {
+			if ($row = $result->fetch()) {
+				$id = $row['id'];
+			}
+			$result->closeCursor();
+		}
+
+		return $id;
+	}
+
+	protected function __tj__get_transaction_id()
+	{
+		$result = $this->_connection->query("SELECT trx_id FROM information_schema.innodb_trx WHERE trx_mysql_thread_id = connection_id()", \PDO::FETCH_ASSOC);
+
+		$trx_id = null;
+		if ($result) {
+			if ($row = $result->fetch()) {
+				$trx_id = $row['trx_id'];
+			}
+		}
+		$result->closeCursor();
+
+		return $trx_id;
+	}
+
+	protected function __tj__get_tx_log_params($result)
+	{
+		global $argv;
+
+		return [
+			'instance' => $this->_instance,
+			'connection_id' => $this->__tj__get_connection_id(),
+			'transaction_id' => $this->__tj__get_transaction_id(),
+			'uri' => \Fuel\Core\Request::main() ? \Fuel\Core\Request::main()->uri : null,
+			'method' => \Fuel\Core\Request::main() ? \Fuel\Core\Request::get_method()->uri : null,
+			'cli' => $argv,
+			'query_string' => $_GET,
+			'params' => \Fuel\Core\Input::all(),
+			'result' => $result,
+			'backtrace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS),
+		];
+	}
+
 	/**
 	 * Start a transaction
 	 *
@@ -504,7 +552,15 @@ class Database_PDO_Connection extends \Database_Connection
 	protected function driver_start_transaction()
 	{
 		$this->_connection or $this->connect();
-		return $this->_connection->beginTransaction();
+		$result = $this->_connection->beginTransaction();
+
+		\Propeller\Log::error(
+			'tx',
+			'START TRANSACTION',
+			$this->__tj__get_tx_log_params($result)
+		);
+
+		return $result;
 	}
 
 	/**
@@ -514,7 +570,15 @@ class Database_PDO_Connection extends \Database_Connection
 	 */
 	protected function driver_commit()
 	{
-		return $this->_connection->commit();
+		$result = $this->_connection->commit();
+
+		\Propeller\Log::error(
+			'tx',
+			'COMMIT',
+			$this->__tj__get_tx_log_params($result)
+		);
+
+		return $result;
 	}
 
 	/**
@@ -523,7 +587,15 @@ class Database_PDO_Connection extends \Database_Connection
 	 */
 	protected function driver_rollback()
 	{
-		return $this->_connection->rollBack();
+		$result = $this->_connection->rollBack();
+
+		\Propeller\Log::error(
+			'tx',
+			'ROLLBACK',
+			$this->__tj__get_tx_log_params($result)
+		);
+
+		return $result;
 	}
 
 	/**
