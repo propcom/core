@@ -535,7 +535,7 @@ class Database_PDO_Connection extends \Database_Connection
 			'connection_id' => $this->__tj__get_connection_id(),
 			'transaction_id' => $this->__tj__get_transaction_id(),
 			'uri' => \Fuel\Core\Request::main() ? \Fuel\Core\Request::main()->uri : null,
-			'method' => \Fuel\Core\Request::main() ? \Fuel\Core\Request::get_method()->uri : null,
+			'method' => \Fuel\Core\Request::main() ? \Fuel\Core\Request::main()->get_method() : null,
 			'cli' => $argv,
 			'query_string' => $_GET,
 			'params' => \Fuel\Core\Input::all(),
