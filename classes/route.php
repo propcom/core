@@ -173,6 +173,8 @@ class Route
 			{
 				unset($named_params[$key]);
 			}
+
+			$named_params[$key] = urldecode($val);
 		}
 
 		$this->named_params = $named_params;
@@ -207,6 +209,10 @@ class Route
 			}
 
 			$this->segments = explode('/', trim($path, '/'));
+
+			foreach ($this->segments as &$segment) {
+				$segment = urldecode($segment);
+			}
 		}
 
 		return $this;
