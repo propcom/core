@@ -348,7 +348,7 @@ class Image_Imagemagick extends \Image_Driver
 
 	public function __destruct()
 	{
-		if (is_file($this->image_temp))
+		if ($this->image_temp && is_file($this->image_temp))
 		{
 			unlink($this->image_temp);
 		}
