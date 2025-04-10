@@ -684,33 +684,30 @@ abstract class Session_Driver
 
 		if ($cookie !== false)
 		{
-			// fetch the payload
-			$this->config['encrypt_cookie'] and $cookie = \Crypt::decode($cookie);
-			$cookie = $this->_unserialize($cookie);
+			try {
+				// fetch the payload
+				$this->config['encrypt_cookie'] and $cookie = \Crypt::decode($cookie);
+				$cookie = $this->_unserialize($cookie);
 
-			// validate the cookie format: must be an array
-			if (is_array($cookie))
-			{
-				// cookies use nested arrays, other drivers have a string value
-				if (($this->config['driver'] === 'cookie' and ! is_array($cookie[0])) or
-					($this->config['driver'] !== 'cookie' and ! is_string($cookie[0])))
-				{
-					// invalid specific format
-					logger('DEBUG', 'Error: Invalid session cookie specific format');
+				// validate the cookie format: must be an array
+				if (is_array($cookie)) {
+					// cookies use nested arrays, other drivers have a string value
+					if (($this->config['driver'] === 'cookie' and !is_array($cookie[0])) or
+						($this->config['driver'] !== 'cookie' and !is_string($cookie[0]))) {
+						// invalid specific format
+						logger('DEBUG', 'Error: Invalid session cookie specific format');
+						$cookie = false;
+					}
+				} // or a string containing the session id
+				elseif (is_string($cookie) and strlen($cookie) == 32) {
+					$cookie = [$cookie];
+				} // invalid general format
+				else {
+					logger('DEBUG', 'Error: Invalid session cookie general format');
 					$cookie = false;
 				}
-			}
-
-			// or a string containing the session id
-			elseif (is_string($cookie) and strlen($cookie) == 32)
-			{
-				$cookie = array($cookie);
-			}
-
-			// invalid general format
-			else
-			{
-				logger('DEBUG', 'Error: Invalid session cookie general format');
+			} catch (\Throwable $t) {
+				logger('ERROR', "Error: failure decoding cookie! Rejecting. {$t->getMessage()} {$t->getFile()}:{$t->getLine()} {$t->getTraceAsString()}");
 				$cookie = false;
 			}
 		}
