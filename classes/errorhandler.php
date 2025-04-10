@@ -36,7 +36,7 @@ class PhpErrorException extends \ErrorException
 			}
 			else
 			{
-				logger(static::$loglevel, $this->code.' - '.$this->message.' in '.$this->file.' on line '.$this->line . ' ' . $this->getTraceAsString());
+				logger(static::$loglevel, $this->code.' - '.$this->message.' in '.$this->file.' on line '.$this->line . (isset($_SERVER['REQUEST_URI']) ? ' ' . $_SERVER['REQUEST_URI'] : '') . ' ' . $this->getTraceAsString());
 			}
 		}
 		elseif (strpos(\Fuel::$env, \Fuel::PRODUCTION) !== 0
@@ -103,7 +103,7 @@ class Errorhandler
 		{
 			$severity = static::$levels[$last_error['type']];
 			$error = new \ErrorException($last_error['message'], $last_error['type'], 0, $last_error['file'], $last_error['line']);
-			logger(static::$loglevel, $severity.' - '.$last_error['message'].' in '.$last_error['file'].' on line '.$last_error['line'], array('exception' => $error));
+			logger(static::$loglevel, $severity.' - '.$last_error['message'].' in '.$last_error['file'].' on line '.$last_error['line'] . (isset($_SERVER['REQUEST_URI']) ? (' ' . $_SERVER['REQUEST_URI']) : ''), array('exception' => $error));
 
 			if (strpos(\Fuel::$env, \Fuel::PRODUCTION) !== 0)
 			{
@@ -137,7 +137,7 @@ class Errorhandler
 			$severity = method_exists($e, 'getSeverity') ? ($e->getSeverity() == 0 ? $e->getCode() : $e->getSeverity()) : $e->getCode();
 			$severity = ( ! isset(static::$levels[$severity])) ? $severity : static::$levels[$severity];
 
-			logger(static::$loglevel, $severity.' - '.$e->getMessage().' in '.$e->getFile().' on line '.$e->getLine() . ' ' . $e->getTraceAsString(), array('exception' => $e));
+			logger(static::$loglevel, $severity.' - '.$e->getMessage().' in '.$e->getFile().' on line '.$e->getLine() . (isset($_SERVER['REQUEST_URI']) ? (' ' . $_SERVER['REQUEST_URI']) : '') . ' ' . $e->getTraceAsString(), array('exception' => $e));
 
 			if (strpos(\Fuel::$env, \Fuel::PRODUCTION) !== 0)
 			{
@@ -198,7 +198,7 @@ class Errorhandler
 	public static function notice($msg, $always_show = false)
 	{
 		$trace = array_merge(array('file' => '(unknown)', 'line' => '(unknown)'), \Arr::get(debug_backtrace(), 1));
-		logger(\Fuel::L_DEBUG, 'Notice - '.$msg.' in '.$trace['file'].' on line '.$trace['line']);
+		logger(\Fuel::L_DEBUG, 'Notice - '.$msg.' in '.$trace['file'].' on line '.$trace['line'] . (isset($_SERVER['REQUEST_URI']) ? (' ' . $_SERVER['REQUEST_URI']) : ''));
 
 		if (\Fuel::$is_test or ( ! $always_show and (strpos(\Fuel::$env, \Fuel::PRODUCTION) === 0)))
 		{
