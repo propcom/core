@@ -36,7 +36,7 @@ class PhpErrorException extends \ErrorException
 			}
 			else
 			{
-				logger(static::$loglevel, $this->code.' - '.$this->message.' in '.$this->file.' on line '.$this->line);
+				logger(static::$loglevel, $this->code.' - '.$this->message.' in '.$this->file.' on line '.$this->line . ' ' . $this->getTraceAsString());
 			}
 		}
 		elseif (strpos(\Fuel::$env, \Fuel::PRODUCTION) !== 0
@@ -137,7 +137,7 @@ class Errorhandler
 			$severity = method_exists($e, 'getSeverity') ? ($e->getSeverity() == 0 ? $e->getCode() : $e->getSeverity()) : $e->getCode();
 			$severity = ( ! isset(static::$levels[$severity])) ? $severity : static::$levels[$severity];
 
-			logger(static::$loglevel, $severity.' - '.$e->getMessage().' in '.$e->getFile().' on line '.$e->getLine(), array('exception' => $e));
+			logger(static::$loglevel, $severity.' - '.$e->getMessage().' in '.$e->getFile().' on line '.$e->getLine() . ' ' . $e->getTraceAsString(), array('exception' => $e));
 
 			if (strpos(\Fuel::$env, \Fuel::PRODUCTION) !== 0)
 			{
